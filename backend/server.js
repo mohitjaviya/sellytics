@@ -14,11 +14,7 @@ const supabase = createClient(
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:5173',
-    'http://localhost:5174',
-  ],
+  origin: true,
   credentials: true,
 }));
 // Bulk CSV/Excel imports can post thousands of rows — the 100 KB default is far
