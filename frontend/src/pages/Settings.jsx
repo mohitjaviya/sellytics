@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Users, Shield, MapPin, Store, Check, Save } from 'lucide-react';
+import { Users, Shield, MapPin, Store, Check, Save, RefreshCw, Key, Link2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../lib/api';
+import { api, integrationsApi } from '../lib/api';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -17,7 +17,17 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Integration state
+  const [integrations, setIntegrations] = useState([]);
+  const [loadingIntegrations, setLoadingIntegrations] = useState(false);
+  const [editingPlatform, setEditingPlatform] = useState(null);
+  const [credForm, setCredForm] = useState({});
+  const [savingCreds, setSavingCreds] = useState(false);
+  const [syncingMap, setSyncingMap] = useState({});
+  const [integMsg, setIntegMsg] = useState('');
+
   useEffect(() => {
+    loadIntegrations();
     if (!isAdminOrManager) return;
 
     api.get('/api/users')
@@ -35,6 +45,14 @@ export default function SettingsPage() {
       .then(res => setAvailableAccounts(res || []))
       .catch(console.error);
   }, [isAdminOrManager]);
+
+  const loadIntegrations = () => {
+    setLoadingIntegrations(true);
+    integrationsApi.list()
+      .then(res => setIntegrations(res || []))
+      .catch(() => {})
+      .finally(() => setLoadingIntegrations(false));
+  };
 
   const selectUserForEdit = (u) => {
     setSelectedUser(u);
@@ -66,6 +84,51 @@ export default function SettingsPage() {
     }
   };
 
+  const openCredModal = (item) => {
+    setEditingPlatform(item);
+    setCredForm(item.credentials || {});
+    setIntegMsg('');
+  };
+
+  const handleSaveCredentials = async () => {
+    if (!editingPlatform) return;
+    setSavingCreds(true);
+    setIntegMsg('');
+    try {
+      const platName = editingPlatform.platform_name.toLowerCase();
+      await integrationsApi.save(platName, { credentials: credForm, is_enabled: true });
+      setIntegMsg(`Successfully connected ${editingPlatform.platform_name} API!`);
+      loadIntegrations();
+      setTimeout(() => setEditingPlatform(null), 1200);
+    } catch (err) {
+      setIntegMsg(`Error: ${err.message}`);
+    } finally {
+      setSavingCreds(false);
+    }
+  };
+
+  const handleToggleAutoSync = async (platName, currentEnabled) => {
+    try {
+      await integrationsApi.toggle(platName.toLowerCase(), !currentEnabled);
+      loadIntegrations();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSyncNow = async (platName) => {
+    setSyncingMap(prev => ({ ...prev, [platName]: true }));
+    try {
+      const res = await integrationsApi.syncNow(platName.toLowerCase());
+      alert(res.message || `${platName} API sync completed!`);
+      loadIntegrations();
+    } catch (err) {
+      alert(`Sync failed: ${err.message}`);
+    } finally {
+      setSyncingMap(prev => ({ ...prev, [platName]: false }));
+    }
+  };
+
   const toggleCity = (city) =>
     setAssignedCities(prev => prev.includes(city) ? prev.filter(c => c !== city) : [...prev, city]);
 
@@ -80,7 +143,65 @@ export default function SettingsPage() {
       <div className="page-header">
         <div className="page-header-left">
           <h1>Settings</h1>
-          <p>Platform configuration &amp; team permissions</p>
+          <p>Platform configuration, API integrations &amp; team permissions</p>
+        </div>
+      </div>
+
+      {/* ── Direct Marketplace API Integrations ────────────────────────── */}
+      <div className="card" style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <h2 style={{ fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <Link2 size={18} color="var(--color-accent)" /> Direct Marketplace API Integrations
+            </h2>
+            <p className="text-sm text-muted">
+              Connect your Amazon SP-API, Flipkart, and Meesho seller accounts to automatically sync orders, inventory &amp; ad spend.
+            </p>
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={loadIntegrations} disabled={loadingIntegrations}>
+            <RefreshCw size={13} className={loadingIntegrations ? 'animate-spin' : ''} /> Refresh Status
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+          {integrations.map(item => {
+            const isConn = item.status === 'connected';
+            const isSyncing = syncingMap[item.platform_name] || item.status === 'syncing';
+            return (
+              <div key={item.platform_name} style={{
+                background: 'var(--color-surface-2)',
+                border: `1px solid ${isConn ? 'rgba(34,197,94,0.3)' : 'var(--color-border)'}`,
+                borderRadius: 'var(--radius)', padding: 18,
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>{item.platform_name}</h3>
+                    <span className={`badge ${isConn ? 'badge-success' : 'badge-muted'}`}>
+                      {isConn ? 'Connected' : 'Not Connected'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted" style={{ marginBottom: 12 }}>{item.display_name}</p>
+
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-subtle)', marginBottom: 16 }}>
+                    <div>Status: <strong style={{ color: isConn ? 'var(--color-success)' : 'var(--color-muted)' }}>{isConn ? 'Auto-Sync Active' : 'Keys Needed'}</strong></div>
+                    <div>Last Synced: {item.last_synced_at ? new Date(item.last_synced_at).toLocaleString('en-IN') : 'Never'}</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 12, borderTop: '1px solid var(--color-border)' }}>
+                  <button className="btn btn-secondary btn-sm" style={{ flex: 1 }} onClick={() => openCredModal(item)}>
+                    <Key size={13} /> {item.credentials_configured ? 'Edit Keys' : 'Connect API'}
+                  </button>
+                  {isConn && (
+                    <button className="btn btn-primary btn-sm" onClick={() => handleSyncNow(item.platform_name)} disabled={isSyncing}>
+                      <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} /> {isSyncing ? 'Syncing…' : 'Sync Now'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -282,11 +403,50 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {!isAdminOrManager && (
-        <div className="card empty-state">
-          <div className="empty-state-icon"><Shield size={24} /></div>
-          <h3>Limited access</h3>
-          <p>Team &amp; role management is available to Admins and Managers.</p>
+      {/* Credential Setup Modal */}
+      {editingPlatform && (
+        <div className="modal-backdrop" onClick={() => setEditingPlatform(null)}>
+          <div className="modal-content" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Key size={18} color="var(--color-accent-light)" /> Configure {editingPlatform.platform_name} API Keys
+            </h2>
+            <p className="text-xs text-muted" style={{ marginBottom: 18 }}>
+              Enter your seller API credentials below. Credentials are encrypted and used solely for direct order and inventory sync.
+            </p>
+
+            {integMsg && (
+              <div style={{
+                padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.82rem', marginBottom: 16,
+                background: integMsg.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
+                border: `1px solid ${integMsg.startsWith('Error') ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)'}`,
+                color: integMsg.startsWith('Error') ? 'var(--color-danger)' : 'var(--color-success)',
+              }}>
+                {integMsg}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+              {editingPlatform.required_fields.map(f => (
+                <div key={f.key} className="form-group">
+                  <label className="form-label">{f.label}</label>
+                  <input
+                    type={f.type}
+                    className="form-input"
+                    placeholder={`Enter ${f.label}`}
+                    value={credForm[f.key] || ''}
+                    onChange={e => setCredForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="btn btn-secondary" onClick={() => setEditingPlatform(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSaveCredentials} disabled={savingCreds}>
+                {savingCreds ? 'Connecting…' : 'Save & Connect'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

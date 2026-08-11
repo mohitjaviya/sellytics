@@ -35,6 +35,7 @@ const profitabilityRoutes = require('./routes/profitability');
 const priceTestsRoutes    = require('./routes/priceTests');
 const usersRoutes         = require('./routes/users');
 const dashboardRoutes     = require('./routes/dashboard');
+const integrationsRoutes  = require('./routes/integrations');
 
 const authMiddleware      = require('./middleware/auth');
 
@@ -57,6 +58,7 @@ app.use('/api/profitability',   profitabilityRoutes);
 app.use('/api/price-tests',     priceTestsRoutes);
 app.use('/api/users',           usersRoutes);
 app.use('/api/dashboard',       dashboardRoutes);
+app.use('/api/integrations',    integrationsRoutes);
 
 // Alias: warehouses live on the inventory router at /api/inventory/warehouses
 // Also expose them at /api/warehouses for convenience

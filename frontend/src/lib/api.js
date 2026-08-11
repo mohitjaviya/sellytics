@@ -145,3 +145,10 @@ export const priceTestApi = {
   delete:  (id)       => api.delete(`/api/price-tests/${id}`),
   results: (id)       => api.get(`/api/price-tests/${id}/results`),
 };
+
+export const integrationsApi = {
+  list:     ()             => api.get('/api/integrations'),
+  save:     (plat, body)   => api.post(`/api/integrations/${plat}`, body),
+  toggle:   (plat, enable) => api.patch(`/api/integrations/${plat}/toggle`, { is_enabled: enable }),
+  syncNow:  (plat)         => api.post(`/api/integrations/${plat}/sync`),
+};

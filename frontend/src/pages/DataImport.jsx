@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import {
   Upload, FileText, CheckCircle, XCircle, AlertTriangle,
   ChevronRight, RotateCcw, Download, Loader, Package,
-  ShoppingCart, Warehouse, BarChart2, X, Info,
+  ShoppingCart, Warehouse, BarChart2, X, Info, Zap, Link2, RefreshCw,
 } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -600,6 +601,24 @@ export default function DataImport() {
             <RotateCcw size={14} /> Start over
           </button>
         )}
+      </div>
+
+      {/* Direct API Auto-Sync Banner */}
+      <div className="card" style={{ marginBottom: 20, padding: '14px 20px', background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(167,139,250,0.05) 100%)', border: '1px solid rgba(99,102,241,0.2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent-light)' }}>
+              <Zap size={18} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Direct Marketplace API Auto-Sync</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)' }}>Skip manual CSV/Excel file uploads by connecting Amazon SP-API, Flipkart &amp; Meesho directly.</div>
+            </div>
+          </div>
+          <Link to="/settings" className="btn btn-secondary btn-sm">
+            <Link2 size={13} /> Configure API Keys in Settings
+          </Link>
+        </div>
       </div>
 
       {/* Type selector */}
