@@ -79,7 +79,10 @@ router.get('/slow-movers', async (req, res) => {
 
   try {
     const days   = daysBetween(from, to);
-    const orders = await fetchOrders(from, to, req.user);
+    const [orders, { data: allSkus }] = await Promise.all([
+      fetchOrders(from, to, req.user),
+      supabase.from('skus').select('id, sku_code, name, brands(name)').eq('is_active', true),
+    ]);
 
     // Build unit map from orders
     const unitMap = {};
@@ -96,12 +99,6 @@ router.get('/slow-movers', async (req, res) => {
       unitMap[o.sku_id].revenue += (o.quantity || 0) * parseFloat(o.sale_price || 0);
       unitMap[o.sku_id].orders  += 1;
     }
-
-    // Fetch all active SKUs to include zero-sellers
-    const { data: allSkus } = await supabase
-      .from('skus')
-      .select('id, sku_code, name, brands(name)')
-      .eq('is_active', true);
 
     const zeroSellers = (allSkus || [])
       .filter(s => !unitMap[s.id])

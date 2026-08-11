@@ -22,15 +22,46 @@ router.get('/', async (req, res) => {
     const windowTo   = ymd(new Date());
     const windowFrom = ymd((() => { const d = new Date(); d.setDate(d.getDate() - 29); return d; })());
 
-    // 1. Sales & Revenue — last 30 days
+    // Build queries
     let ordersQ = supabase
       .from('sales_orders')
       .select('quantity, sale_price, order_date, sku_id, skus(name, cost_price, image_url)')
       .gte('order_date', windowFrom)
       .lte('order_date', windowTo);
-      
     ordersQ = applyRbac(ordersQ, req.user, 'sales_orders');
-    const { data: orders, error: oErr } = await ordersQ;
+
+    const activeSkusQ = supabase
+      .from('skus')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true);
+
+    const invRowsQ = supabase
+      .from('inventory')
+      .select('quantity, skus(low_stock_threshold)');
+
+    let targetQ = supabase
+      .from('targets')
+      .select('target_revenue, target_units')
+      .lte('period_start', windowTo)
+      .gte('period_end', windowFrom);
+    targetQ = applyRbac(targetQ, req.user, 'targets');
+
+    const priceTestsQ = supabase
+      .from('price_tests')
+      .select('id, name, skus(name)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    // Execute all 5 queries concurrently
+    const [
+      { data: orders, error: oErr },
+      { count: activeSkus },
+      { data: invRows },
+      { data: targets },
+      { data: priceTests }
+    ] = await Promise.all([ordersQ, activeSkusQ, invRowsQ, targetQ, priceTestsQ]);
+
     if (oErr) throw new Error(oErr.message);
 
     let mtdRevenue = 0;
@@ -59,43 +90,14 @@ router.get('/', async (req, res) => {
       .sort((a, b) => b.velocity - a.velocity)
       .slice(0, 5);
 
-    // 2. Active SKUs
-    const { count: activeSkus } = await supabase
-      .from('skus')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_active', true);
-
-    // 3. Low Stock Alerts — count inventory rows below their SKU's own threshold
-    //    (defaults to 10 when a SKU has none set), matching /api/inventory/alerts.
-    const { data: invRows } = await supabase
-      .from('inventory')
-      .select('quantity, skus(low_stock_threshold)');
     const lowStockCount = (invRows || []).filter(
       r => (r.quantity ?? 0) < (r.skus?.low_stock_threshold ?? 10)
     ).length;
 
-    // 4. Target — any target whose active period overlaps the 30-day window
-    let targetQ = supabase
-      .from('targets')
-      .select('target_revenue, target_units')
-      .lte('period_start', windowTo)
-      .gte('period_end', windowFrom);
-      
-    targetQ = applyRbac(targetQ, req.user, 'targets');
-    const { data: targets } = await targetQ;
-    
     let mtdTargetRevenue = 0;
     for (const t of (targets || [])) {
       mtdTargetRevenue += parseFloat(t.target_revenue) || 0;
     }
-
-    // 5. Active Price Tests (live A/B experiments)
-    const { data: priceTests } = await supabase
-      .from('price_tests')
-      .select('id, name, skus(name)')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(3);
 
     res.json({
       metrics: {

@@ -66,13 +66,6 @@ export default function Sidebar() {
         <span className="sidebar-logo-name">Sellytics</span>
       </div>
 
-      {/* Role chip */}
-      <div style={{ padding: '0 20px', marginBottom: 12 }}>
-        <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-          {user?.role ?? 'Sales Executive'}
-        </span>
-      </div>
-
       <div className="sidebar-divider" />
 
       {/* Navigation */}

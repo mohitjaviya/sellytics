@@ -74,9 +74,6 @@ router.get('/sku', async (req, res) => {
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
 
   try {
-    const platforms = await fetchPlatforms();
-
-    // Fetch orders with full cost data
     let ordersQ = supabase
       .from('sales_orders')
       .select(`
@@ -89,14 +86,14 @@ router.get('/sku', async (req, res) => {
       .lte('order_date', to);
 
     if (platform_id) ordersQ = ordersQ.eq('platform_id', platform_id);
-
     ordersQ = applyRbac(ordersQ, req.user, 'sales_orders');
 
-    const { data: orders, error: oErr } = await ordersQ;
+    const [platforms, { data: orders, error: oErr }, adRows] = await Promise.all([
+      fetchPlatforms(),
+      ordersQ,
+      fetchAdSpend(from, to),
+    ]);
     if (oErr) throw new Error(oErr.message);
-
-    // Fetch ad spend aggregated by SKU in period
-    const adRows   = await fetchAdSpend(from, to);
     const adBySkuPlat = {};
     for (const a of adRows) {
       const k = `${a.sku_id}::${a.platform_id}`;
