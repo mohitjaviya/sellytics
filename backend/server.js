@@ -159,8 +159,12 @@ app.get('/api/ad-spend', async (req, res) => {
   res.json(data);
 });
 
-// ── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`Sellytics API running on http://localhost:${PORT}`);
-  console.log(`   Health: http://localhost:${PORT}/api/health`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Sellytics API running on http://localhost:${PORT}`);
+    console.log(`   Health: http://localhost:${PORT}/api/health`);
+  });
+}
+
+module.exports = app;
+
