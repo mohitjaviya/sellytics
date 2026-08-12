@@ -628,6 +628,7 @@ tbody tr:hover { background: var(--color-surface-2); }
     display: flex;
   }
 
+  /* Slide-over Mobile Navigation Drawer */
   .sidebar {
     position: fixed;
     top: 0;
@@ -635,7 +636,7 @@ tbody tr:hover { background: var(--color-surface-2); }
     bottom: 0;
     z-index: 1000;
     width: 260px;
-    box-shadow: 0 0 32px rgba(0,0,0,0.6);
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
     transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -645,19 +646,93 @@ tbody tr:hover { background: var(--color-surface-2); }
 
   .topbar {
     padding: 0 14px;
+    gap: 8px;
+  }
+
+  .topbar-breadcrumb-text {
+    display: none;
+  }
+
+  .topbar-breadcrumb-page {
+    font-size: 0.95rem;
   }
 
   .page-content {
-    padding: 16px;
+    padding: 14px;
   }
 
+  /* Mobile Page Header */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .page-header-left h1 {
+    font-size: 1.25rem;
+  }
+
+  /* Mobile Grids */
   .grid-stats {
-    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .grid-2, .grid-3, .grid-4 {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-card-value {
+    font-size: 1.35rem;
+  }
+
+  /* Mobile Form Controls */
+  .form-input {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  /* Mobile Tables */
+  .table-wrap {
+    margin: 0 -2px;
+    border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th, td {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Mobile Modal Bottom Sheet */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px;
+    max-height: 88vh;
+    border-bottom: none;
+  }
+
+  /* Mobile Login Card */
+  .login-card {
+    padding: 28px 20px;
+    margin: 16px;
+    border-radius: 16px;
   }
 }
 
