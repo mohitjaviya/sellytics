@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Shield, MapPin, Store, Check, Save, RefreshCw, Key, Link2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api, integrationsApi } from '../lib/api';
@@ -448,8 +449,8 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Credential Setup Modal */}
-      {editingPlatform && (
+      {/* Credential Setup Modal — Portalled to body so parent transforms never offset alignment */}
+      {editingPlatform && createPortal(
         <div className="modal-overlay" onClick={() => setEditingPlatform(null)}>
           <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -492,7 +493,8 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
