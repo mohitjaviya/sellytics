@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const supabase = require('../lib/supabase');
+const { applyRbac } = require('../middleware/rbacHelper');
 
 // Helper for days between dates
 function daysBetween(from, to) {
