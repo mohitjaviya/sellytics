@@ -185,6 +185,7 @@ function FilterBar({ dates, onChange, onApply, loading, extra }) {
 // ════════════════════════════════════════════════════════════════════════════════
 function SkuProfitTab({ dates, onDatesChange }) {
   const [data,    setData]    = useState([]);
+  const [totals,  setTotals]  = useState(null);
   const [loading, setLoading] = useState(false);
   const [limit,   setLimit]   = useState(25);
   const [sortBy,  setSortBy]  = useState('net_profit');
@@ -193,7 +194,11 @@ function SkuProfitTab({ dates, onDatesChange }) {
 
   const load = useCallback(async (d = dates) => {
     setLoading(true);
-    try { const r = await profitabilityApi.skuProfit({ ...d, limit }); setData(r.data || []); }
+    try {
+      const r = await profitabilityApi.skuProfit({ ...d, limit });
+      setData(r.data || []);
+      setTotals(r.totals || null);
+    }
     catch { /* silent */ }
     finally { setLoading(false); }
   }, [dates, limit]);
@@ -210,11 +215,11 @@ function SkuProfitTab({ dates, onDatesChange }) {
                        : (a[sortBy] ?? Infinity)  - (b[sortBy] ?? Infinity)
   );
 
-  // Summary stats
-  const totalRev    = data.reduce((s, r) => s + r.total_revenue, 0);
-  const totalNet    = data.reduce((s, r) => s + r.net_profit, 0);
-  const totalAd     = data.reduce((s, r) => s + r.ad_spend, 0);
-  const avgMargin   = data.length ? (data.reduce((s, r) => s + (r.net_margin_pct || 0), 0) / data.length) : 0;
+  // Summary stats — use store-wide totals across all 86 SKUs if available
+  const totalRev    = totals?.total_revenue   ?? data.reduce((s, r) => s + r.total_revenue, 0);
+  const totalNet    = totals?.net_profit      ?? data.reduce((s, r) => s + r.net_profit, 0);
+  const totalAd     = totals?.ad_spend        ?? data.reduce((s, r) => s + r.ad_spend, 0);
+  const avgMargin   = totals?.avg_margin      ?? (data.length ? (data.reduce((s, r) => s + (r.net_margin_pct || 0), 0) / data.length) : 0);
 
   function SortIcon({ col }) {
     if (sortBy !== col) return <ChevronDown size={11} color="var(--color-muted)" />;
