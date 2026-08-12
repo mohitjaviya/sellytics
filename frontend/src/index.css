@@ -716,16 +716,9 @@ tbody tr:hover { background: var(--color-surface-2); }
   }
 
   /* Mobile Modal */
-  .modal-overlay {
-    padding: 16px;
-    align-items: center;
-  }
-
   .modal {
-    border-radius: var(--radius-lg);
     padding: 20px 16px;
     max-height: 85vh;
-    margin: auto;
   }
 
   /* Mobile Login Card */
@@ -776,15 +769,20 @@ tbody tr:hover { background: var(--color-surface-2); }
 /* ── Modal ───────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-  overflow-y: auto;
+  z-index: 9999;
+  padding: 16px;
+  box-sizing: border-box;
   animation: fadeIn 0.15s ease;
 }
 
@@ -795,10 +793,9 @@ tbody tr:hover { background: var(--color-surface-2); }
   padding: 26px;
   width: 100%;
   max-width: 520px;
-  max-height: 88vh;
+  max-height: 85vh;
   overflow-y: auto;
-  margin: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.8);
   animation: fadeIn 0.2s ease;
 }
 
