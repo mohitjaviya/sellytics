@@ -39,7 +39,7 @@ const BASE_NAV = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onClose }) {
   const { user, signOut } = useAuth();
   const location           = useLocation();
   const [alertCount, setAlertCount] = useState(0);
@@ -57,7 +57,7 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
       {/* Logo */}
       <div className="sidebar-logo" style={{ marginBottom: 16 }}>
         <div className="sidebar-logo-icon">
@@ -80,6 +80,7 @@ export default function Sidebar() {
                 end={end}
                 id={`nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
                 className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                onClick={onClose}
               >
                 <Icon size={17} />
                 <span style={{ flex: 1 }}>{label}</span>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Bell, Search, Activity, User, LogOut, Settings,
+  Bell, Search, Activity, User, LogOut, Settings, Menu,
   AlertTriangle, Package, TrendingUp, CheckCircle2, X, Command, ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -29,7 +29,7 @@ const PAGES_LIST = [
   { path: '/settings',  title: 'Settings',       icon: Settings   },
 ];
 
-export default function Topbar() {
+export default function Topbar({ onToggleMobile }) {
   const { user, signOut } = useAuth();
   const { pathname }     = useLocation();
   const navigate         = useNavigate();
@@ -99,6 +99,15 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
+      {/* Mobile Menu Toggle Button */}
+      <button
+        className="btn btn-ghost btn-icon mobile-menu-toggle"
+        onClick={onToggleMobile}
+        title="Open navigation menu"
+      >
+        <Menu size={19} />
+      </button>
+
       {/* Breadcrumb / Page Title */}
       <div className="topbar-breadcrumb">
         <div>
