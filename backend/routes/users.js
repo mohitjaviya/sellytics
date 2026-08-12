@@ -1,11 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const supabase = require('../lib/supabase');
 
 // Admin/Manager only middleware for this router
 router.use((req, res, next) => {

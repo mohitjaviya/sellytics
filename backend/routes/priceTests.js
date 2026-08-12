@@ -1,11 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const supabase = require('../lib/supabase');
 
 function round2(n) { return Math.round((n || 0) * 100) / 100; }
 function daysBetween(a, b) {

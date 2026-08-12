@@ -1,16 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { createClient } = require('@supabase/supabase-js');
-
-const app = express();
-const PORT = process.env.PORT || 4000;
-
-// ── Supabase Client ─────────────────────────────────────────────────────────
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const supabase = require('./lib/supabase');
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
@@ -155,6 +146,12 @@ app.get('/api/ad-spend', async (req, res) => {
     .order('date', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+// Global JSON Error Handler — guarantees valid JSON responses even during server errors
+app.use((err, req, res, next) => {
+  console.error('[Sellytics API Error]:', err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
 
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
