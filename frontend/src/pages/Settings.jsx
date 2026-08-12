@@ -3,6 +3,47 @@ import { Users, Shield, MapPin, Store, Check, Save, RefreshCw, Key, Link2, Alert
 import { useAuth } from '../context/AuthContext';
 import { api, integrationsApi } from '../lib/api';
 
+const DEFAULT_INTEGRATIONS = [
+  {
+    platform_name: 'Amazon',
+    display_name: 'Amazon Selling Partner API (SP-API)',
+    is_enabled: false,
+    status: 'disconnected',
+    credentials_configured: false,
+    last_synced_at: null,
+    required_fields: [
+      { key: 'lwa_client_id', label: 'LWA Client ID', type: 'text' },
+      { key: 'lwa_client_secret', label: 'LWA Client Secret', type: 'password' },
+      { key: 'refresh_token', label: 'LWA Refresh Token', type: 'password' },
+      { key: 'seller_id', label: 'Amazon Seller ID (Merchant Token)', type: 'text' },
+    ],
+  },
+  {
+    platform_name: 'Flipkart',
+    display_name: 'Flipkart Seller Hub API',
+    is_enabled: false,
+    status: 'disconnected',
+    credentials_configured: false,
+    last_synced_at: null,
+    required_fields: [
+      { key: 'app_id', label: 'Flipkart App ID', type: 'text' },
+      { key: 'app_secret', label: 'Flipkart App Secret', type: 'password' },
+    ],
+  },
+  {
+    platform_name: 'Meesho',
+    display_name: 'Meesho Supplier Panel API',
+    is_enabled: false,
+    status: 'disconnected',
+    credentials_configured: false,
+    last_synced_at: null,
+    required_fields: [
+      { key: 'supplier_id', label: 'Meesho Supplier ID', type: 'text' },
+      { key: 'api_key', label: 'Meesho API Key / Auth Token', type: 'password' },
+    ],
+  },
+];
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const isAdminOrManager = user?.role === 'Admin' || user?.role === 'Manager';
@@ -18,7 +59,7 @@ export default function SettingsPage() {
   const [message, setMessage] = useState('');
 
   // Integration state
-  const [integrations, setIntegrations] = useState([]);
+  const [integrations, setIntegrations] = useState(DEFAULT_INTEGRATIONS);
   const [loadingIntegrations, setLoadingIntegrations] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState(null);
   const [credForm, setCredForm] = useState({});
@@ -49,7 +90,11 @@ export default function SettingsPage() {
   const loadIntegrations = () => {
     setLoadingIntegrations(true);
     integrationsApi.list()
-      .then(res => setIntegrations(res || []))
+      .then(res => {
+        if (Array.isArray(res) && res.length > 0) {
+          setIntegrations(res);
+        }
+      })
       .catch(() => {})
       .finally(() => setLoadingIntegrations(false));
   };
@@ -405,8 +450,8 @@ export default function SettingsPage() {
 
       {/* Credential Setup Modal */}
       {editingPlatform && (
-        <div className="modal-backdrop" onClick={() => setEditingPlatform(null)}>
-          <div className="modal-content" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setEditingPlatform(null)}>
+          <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Key size={18} color="var(--color-accent-light)" /> Configure {editingPlatform.platform_name} API Keys
             </h2>
