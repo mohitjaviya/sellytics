@@ -284,9 +284,9 @@ function SkuProfitTab({ dates, onDatesChange }) {
                     onClick={() => setExpand(isExpanded ? null : row.sku_id)}
                     style={{ cursor: 'pointer', background: netIsNeg ? 'rgba(239,68,68,0.025)' : undefined }}
                   >
-                    <td>
-                      <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--color-accent-light)' }}>{row.sku_code}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }} className="truncate">{row.sku_name}</div>
+                    <td style={{ maxWidth: 220 }}>
+                      <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--color-accent-light)' }} className="truncate" title={row.sku_code}>{row.sku_code}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }} className="truncate" title={row.sku_name}>{row.sku_name}</div>
                     </td>
                     <td style={{ textAlign: 'right', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{fmtINR(row.total_revenue)}</td>
                     <td style={{ textAlign: 'right', fontSize: '0.83rem', color: 'var(--color-muted)' }}>{fmtINR(row.total_cost)}</td>
@@ -609,9 +609,9 @@ function HighBurnTab({ dates, onDatesChange }) {
                       {row.flag_depletion && <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>🟡 Depleting Fast</span>}
                     </div>
                   </td>
-                  <td>
-                    <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--color-accent-light)' }}>{row.sku_code}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }} className="truncate">{row.sku_name}</div>
+                  <td style={{ maxWidth: 220 }}>
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--color-accent-light)' }} className="truncate" title={row.sku_code}>{row.sku_code}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }} className="truncate" title={row.sku_name}>{row.sku_name}</div>
                   </td>
                   <td style={{ textAlign: 'right', fontFamily: 'Outfit, sans-serif', fontWeight: 600 }}>{fmtINR(row.revenue)}</td>
                   <td style={{ textAlign: 'right', color: '#f97316', fontSize: '0.85rem' }}>{fmtINR(row.ad_spend)}</td>
